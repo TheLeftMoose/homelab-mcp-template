@@ -74,8 +74,14 @@ Custom Copilot CLI agents are **not vendored** in this repo. Install the
 shared homelab plugin instead:
 
 ```bash
-copilot plugin install github.com/TheLeftMoose/homelab-copilot-plugin
+# One-time per machine
+copilot plugin marketplace add TheLeftMoose/homelab-copilot-plugin
+
+# Install or update the plugin
+copilot plugin install homelab-copilot@homelab-copilot
 ```
+
+This requires `homelab-copilot-plugin` v1.0.0+; legacy `copilot plugin install TheLeftMoose/homelab-copilot-plugin` direct form still works but is deprecated by Copilot CLI.
 
 ADRs for this repo should be service-specific only. Shared process and
 architecture decisions live in the cockpit and are linked above, not copied here.
