@@ -1,0 +1,44 @@
+name: Architecture decision
+description: Propose or amend an Architecture Decision Record
+title: "adr: <decision title>"
+labels: ["type:adr", "priority:med"]
+assignees: ["{{ repo_owner }}"]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and problem statement
+      description: What decision needs to be made, and why now?
+    validations:
+      required: true
+  - type: textarea
+    id: drivers
+    attributes:
+      label: Decision drivers
+      description: Forces, constraints, and trade-offs.
+      value: |
+        -
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Considered options
+      description: List at least two options, including the likely choice.
+      value: |
+        - Option A —
+        - Option B —
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Proposed outcome
+      description: The recommended decision and expected consequences.
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to issues, PRs, docs, or related ADRs.

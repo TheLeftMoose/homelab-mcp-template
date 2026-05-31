@@ -1,0 +1,23 @@
+"""Settings loaded from env vars (or a `.env` file)."""
+
+from __future__ import annotations
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """{{ service_display_name }} connection settings."""
+
+    model_config = SettingsConfigDict(
+        env_prefix="{{ service_env_prefix }}_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    host: str = Field(..., description="{{ service_display_name }} hostname or IP (no scheme)")
+    username: str = Field(..., description="Dedicated MCP user")
+    password: str = Field(..., description="Password for that user")
+    port: int = Field({{ default_port }}, description="Service API port")
+    use_https: bool = Field(True, description="HTTPS vs plaintext HTTP")

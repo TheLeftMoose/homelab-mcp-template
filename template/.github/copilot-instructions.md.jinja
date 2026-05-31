@@ -1,0 +1,81 @@
+# Copilot instructions for `{{ repo_name }}`
+
+> Status: scaffolded from [`homelab-mcp-template`](https://github.com/TheLeftMoose/homelab-mcp-template).
+> This repo hosts a thin MCP server for **{{ service_display_name }}**, built for
+> the [`homelab-llm`][cockpit] cockpit.
+
+## Project purpose
+
+{{ description }}
+
+Decision context:
+- [ADR-0006 in cockpit][adr-0006] — why per-service MCPs live in separate repos.
+- [ADR-0007 in cockpit][adr-0007] — MCP self-sufficiency: expose this service's own observations.
+- [ADR-0008 in cockpit][adr-0008] — copier template strategy for per-service repos.
+- [Risk tiers in cockpit][risk-tiers] — labels drive merge autonomy.
+
+[cockpit]: https://github.com/TheLeftMoose/homelab-llm
+[adr-0006]: https://github.com/TheLeftMoose/homelab-llm/blob/main/docs/adr/0006-cockpit-not-monorepo.md
+[adr-0007]: https://github.com/TheLeftMoose/homelab-llm/blob/main/docs/adr/0007-mcp-self-sufficiency.md
+[adr-0008]: https://github.com/TheLeftMoose/homelab-llm/blob/main/docs/adr/0008-mcp-repo-template-strategy.md
+[risk-tiers]: https://github.com/TheLeftMoose/homelab-llm/blob/main/docs/process/risk-tiers.md
+
+## Toolchain
+
+- **Python deps & venv:** [`uv`](https://docs.astral.sh/uv/).
+  - Add a dep: `uv add <pkg>` (use `uv add --dev <pkg>` for dev-only).
+  - Run a command in the project env: `uv run <cmd>`.
+  - Sync after pulling: `uv sync`.
+- **Lint + format:** `ruff` (both linter and formatter).
+  - `uv run ruff check .` / `uv run ruff format .`
+- **Types:** `mypy` strict for `src/`.
+  - `uv run mypy src`
+- **Tests:** `pytest` with `pytest-asyncio` (auto mode).
+  - `uv run pytest`
+
+All tool configuration lives in `pyproject.toml`. Do not add per-tool
+config files unless a tool genuinely requires it.
+
+## Layout
+
+```
+src/{{ python_pkg }}/
+  __init__.py
+  __main__.py
+  config.py
+  server.py
+tests/
+```
+
+## Architecture conventions
+
+- **One MCP server per service.** This repo IS one MCP server. Don't cross the boundary.
+- **Read-only first.** Start with read-only observation tools.
+- **Config via env vars** loaded once into a typed `pydantic-settings` object.
+- **Async-first.** Keep network/client code async end-to-end.
+- **Reuse the service connection.** Don't open a new connection per tool call.
+- **No secrets in the repo.** `.env` is git-ignored; document required vars in `.env.example`.
+
+## When adding a tool
+
+1. Confirm the tool follows [ADR-0007][adr-0007].
+2. Confirm the risk tier and whether an ADR is needed before adding controls.
+3. Add the tool in `src/{{ python_pkg }}/server.py`.
+4. Add a `pytest` test in `tests/` using a fake host.
+5. Update the README's tool list and env-var docs.
+6. Run `uv run ruff format . && uv run ruff check . && uv run mypy src && uv run pytest`.
+
+## Process and agents
+
+GitHub Flow, Conventional Commit PR titles, squash-merge, and risk-tier
+labels follow the cockpit conventions.
+
+Custom Copilot CLI agents are **not vendored** in this repo. Install the
+shared homelab plugin instead:
+
+```bash
+copilot plugin install github.com/TheLeftMoose/homelab-copilot-plugin
+```
+
+ADRs for this repo should be service-specific only. Shared process and
+architecture decisions live in the cockpit and are linked above, not copied here.

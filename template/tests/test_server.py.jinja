@@ -1,0 +1,114 @@
+"""Tests for the scaffolded {{ service_display_name }} MCP server."""
+
+from __future__ import annotations
+
+from typing import Any
+
+import pytest
+from pydantic import ValidationError
+
+import {{ python_pkg }}
+from {{ python_pkg }}.config import Settings
+from {{ python_pkg }}.server import ServiceConnection, build_server
+
+
+def test_package_exposes_version() -> None:
+    assert isinstance({{ python_pkg }}.__version__, str)
+    assert {{ python_pkg }}.__version__
+
+
+def test_settings_requires_credentials(monkeypatch: pytest.MonkeyPatch) -> None:
+    for var in ("{{ service_env_prefix }}_HOST", "{{ service_env_prefix }}_USERNAME", "{{ service_env_prefix }}_PASSWORD"):
+        monkeypatch.delenv(var, raising=False)
+    with pytest.raises(ValidationError):
+        Settings(_env_file=None)  # type: ignore[call-arg]
+
+
+def test_settings_parses_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("{{ service_env_prefix }}_HOST", "192.0.2.10")
+    monkeypatch.setenv("{{ service_env_prefix }}_USERNAME", "mcp")
+    monkeypatch.setenv("{{ service_env_prefix }}_PASSWORD", "hunter2")
+    s = Settings(_env_file=None)  # type: ignore[call-arg]
+    assert s.host == "192.0.2.10"
+    assert s.port == {{ default_port }}
+    assert s.use_https is True
+
+
+class StrictFakeHost:
+    """Minimal stand-in for the service client."""
+
+    def __init__(
+        self,
+        host: str,
+        username: str,
+        password: str,
+        *,
+        port: int = {{ default_port }},
+        use_https: bool = True,
+    ) -> None:
+        self._init: dict[str, Any] = {
+            "host": host,
+            "username": username,
+            "password": password,
+            "port": port,
+            "use_https": use_https,
+        }
+        self.host = host
+        self.port = port
+        self.protocol = "https" if use_https else "http"
+        self.host_data_calls = 0
+        self.logout_calls = 0
+
+    async def get_host_data(self) -> None:
+        self.host_data_calls += 1
+
+    async def logout(self) -> None:
+        self.logout_calls += 1
+
+
+@pytest.fixture
+def settings(monkeypatch: pytest.MonkeyPatch) -> Settings:
+    monkeypatch.setenv("{{ service_env_prefix }}_HOST", "192.0.2.10")
+    monkeypatch.setenv("{{ service_env_prefix }}_USERNAME", "mcp")
+    monkeypatch.setenv("{{ service_env_prefix }}_PASSWORD", "hunter2")
+    return Settings(_env_file=None)  # type: ignore[call-arg]
+
+
+@pytest.fixture
+def connection(settings: Settings) -> ServiceConnection:
+    return ServiceConnection(settings, host_factory=StrictFakeHost)
+
+
+async def test_connection_bootstraps_lazily(connection: ServiceConnection) -> None:
+    host_a = await connection.get()
+    host_b = await connection.get()
+    assert host_a is host_b
+    assert isinstance(host_a, StrictFakeHost)
+    assert host_a.host_data_calls == 1
+
+
+async def test_connection_close_logs_out(connection: ServiceConnection) -> None:
+    host = await connection.get()
+    assert isinstance(host, StrictFakeHost)
+    await connection.close()
+    assert host.logout_calls == 1
+
+
+def test_build_server_registers_scaffold_tool(connection: ServiceConnection) -> None:
+    server = build_server(connection)
+    tools = server._tool_manager.list_tools()
+    names = sorted(t.name for t in tools)
+    assert names == ["{{ service_name | replace('-', '_') }}_get_endpoint_info"]
+
+
+async def test_endpoint_info_returns_configured_endpoint(connection: ServiceConnection) -> None:
+    server = build_server(connection)
+    result = await server._tool_manager.call_tool("{{ service_name | replace('-', '_') }}_get_endpoint_info", {})
+    assert result == {
+        "service": "{{ service_name }}",
+        "display_name": "{{ service_display_name }}",
+        "host": "192.0.2.10",
+        "port": {{ default_port }},
+        "protocol": "https",
+        "todo": "replace scaffold tool with service-specific observations",
+    }

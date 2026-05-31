@@ -1,0 +1,41 @@
+name: Bug report
+description: Something is broken or behaving unexpectedly
+title: "<short description of the bug>"
+labels: ["type:fix", "priority:med"]
+assignees: ["{{ repo_owner }}"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: Symptom — what you saw.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal repro. Include commands/inputs.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Versions, host, relevant service state.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / output
+      description: Paste relevant excerpts. Redact secrets.
+      render: shell

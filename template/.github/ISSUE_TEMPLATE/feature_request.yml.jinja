@@ -1,0 +1,47 @@
+name: Feature request
+description: Propose a new feature or improvement
+title: "<short, imperative title>"
+labels: ["type:feat", "priority:med"]
+assignees: ["{{ repo_owner }}"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: One or two sentences. Why does this exist? What's the user-visible outcome?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Bullet list of what's in scope. Be specific.
+    validations:
+      required: true
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Initial deliverables
+      description: Concrete, checkable items. Roughly in execution order.
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of scope
+      description: What this issue intentionally does NOT do. Prevents scope creep.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Reference other issues by `#N`. Leave blank if none.
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to docs, repos, prior conversations, ADRs.

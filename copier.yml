@@ -1,0 +1,69 @@
+_min_copier_version: "9.0.0"
+_templates_suffix: ".jinja"
+_subdirectory: template
+_exclude:
+  - ".git"
+
+service_name:
+  type: str
+  help: "Service key in kebab-case (for repo name and MCP server key), e.g. pihole."
+  validator: >-
+    {% if not (service_name | regex_search('^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$')) %}
+    service_name must be kebab-case: lowercase letters/numbers separated by single hyphens.
+    {% endif %}
+
+python_pkg:
+  type: str
+  help: "Importable Python package name."
+  default: "{{ service_name | replace('-', '_') }}_mcp"
+  validator: >-
+    {% if not (python_pkg | regex_search('^[a-zA-Z_][a-zA-Z0-9_]*$')) %}
+    python_pkg must be a valid Python identifier.
+    {% endif %}
+
+service_display_name:
+  type: str
+  help: "Human-readable service name for docs and README."
+  default: "{{ service_name | replace('-', ' ') | title }}"
+
+vendor_library:
+  type: str
+  help: "Optional upstream Python client library, e.g. reolink_aio. Leave empty to write from scratch."
+  default: ""
+
+default_port:
+  type: int
+  help: "Default network port for the service API."
+  default: 443
+
+description:
+  type: str
+  help: "One-line description for pyproject, README, and GitHub repo."
+  validator: >-
+    {% if not description %}
+    description is required.
+    {% endif %}
+
+author_name:
+  type: str
+  help: "Package author name."
+  default: "TheLeftMoose"
+
+repo_owner:
+  type: str
+  help: "GitHub owner for install URLs."
+  default: "TheLeftMoose"
+
+repo_name:
+  type: str
+  help: "GitHub repository name."
+  default: "homelab-{{ service_name }}-mcp"
+
+service_env_prefix:
+  type: str
+  help: "Environment variable prefix."
+  default: "{{ service_name | replace('-', '_') | upper }}"
+  validator: >-
+    {% if not (service_env_prefix | regex_search('^[A-Z][A-Z0-9_]*$')) %}
+    service_env_prefix must be uppercase letters/numbers/underscores.
+    {% endif %}

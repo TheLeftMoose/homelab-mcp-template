@@ -1,0 +1,66 @@
+# {{ repo_name }}
+
+> {{ description }}
+
+## What it is
+
+A thin FastMCP server for **{{ service_display_name }}**, scaffolded for the
+[`homelab-llm`][cockpit] cockpit. It starts with one placeholder endpoint-info
+tool; replace that scaffold with service-specific read-only observations per
+[ADR-0007][adr-0007].
+
+## Install
+
+The cockpit can run this repo directly from GitHub with `uvx`:
+
+```bash
+uvx --from git+https://github.com/{{ repo_owner }}/{{ repo_name }} {{ repo_name }}
+```
+
+Wire it into the cockpit by adding the `{{ service_name }}` MCP entry to
+`homelab-llm`'s `.env.example` and `scripts/render-mcp-config.sh`.
+
+## Environment
+
+Required env vars (see `.env.example`):
+
+| Var | Purpose |
+|---|---|
+| `{{ service_env_prefix }}_HOST` | {{ service_display_name }} host/IP, no scheme |
+| `{{ service_env_prefix }}_USERNAME` | Dedicated MCP user |
+| `{{ service_env_prefix }}_PASSWORD` | Password for that user |
+| `{{ service_env_prefix }}_PORT` | Optional API port (default `{{ default_port }}`) |
+| `{{ service_env_prefix }}_USE_HTTPS` | Optional, default `true` |
+
+## Tools
+
+- `{{ service_name | replace('-', '_') }}_get_endpoint_info()` — scaffold tool
+  that proves settings, connection reuse, FastMCP registration, and tests work.
+  Replace it with real {{ service_display_name }} tools before production use.
+
+## Develop
+
+This repo uses [`uv`][uv] for dependency / venv management.
+
+```bash
+uv sync
+uv run ruff format .
+uv run ruff check .
+uv run mypy src
+uv run pytest
+uv run {{ repo_name }}
+```
+
+## Architecture links
+
+- [ADR-0006][adr-0006] — cockpit-not-monorepo; per-service repos stay separate.
+- [ADR-0007][adr-0007] — MCP self-sufficiency; expose this service's own API.
+- [ADR-0008][adr-0008] — copier template strategy.
+- [Risk tiers][risk-tiers] — labels and merge autonomy.
+
+[cockpit]: https://github.com/TheLeftMoose/homelab-llm
+[adr-0006]: https://github.com/TheLeftMoose/homelab-llm/blob/main/docs/adr/0006-cockpit-not-monorepo.md
+[adr-0007]: https://github.com/TheLeftMoose/homelab-llm/blob/main/docs/adr/0007-mcp-self-sufficiency.md
+[adr-0008]: https://github.com/TheLeftMoose/homelab-llm/blob/main/docs/adr/0008-mcp-repo-template-strategy.md
+[risk-tiers]: https://github.com/TheLeftMoose/homelab-llm/blob/main/docs/process/risk-tiers.md
+[uv]: https://docs.astral.sh/uv/
